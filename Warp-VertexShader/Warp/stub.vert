@@ -14,6 +14,11 @@ uniform vec2 mouseStart;
 vec2 va = VertexPosition;
 float dx = mouse.x - mouseStart.x;
 float dy = mouse.y - mouseStart.y;
+vec2 nearest;
+
+
+
+
 
 float above_slope = -(1 - mouseStart.y)/dx;
 float below_slope = (mouseStart.y+1)/dx;
@@ -21,34 +26,57 @@ float below_slope = (mouseStart.y+1)/dx;
 float left_slope = (mouse.x+1)/dy;
 float right_slope = -(1 - mouse.x)/dy;
 
+float getSlope() {
+
+	if(mouse.x >= 0)
+	{
+		nearest.x = 1;
+	}
+	else
+	{
+		nearest.x = -1;
+	}
+
+	if(mouse.y >= 0) 
+	{
+		nearest.y = 1;
+	}
+	else
+	{
+		nearest.y = -1;
+	}
+
+	float slope;
+
+	if(abs(mouse.x-nearest.x) > abs(mouse.y-nearest.y))
+	{
+		slope = dy/(mouse.y-nearest.y);
+	}
+	else
+	{
+		slope = dx/(mouse.x-nearest.x);
+	}
+
+
+	return slope;
+
+}
+
 
 void main()
 {
 	texLocation = TexPosition;
 
-	if(va.y >= mouseStart.y)
+	float slope = getSlope();
+
+	if( va.x <= mouse.x )
 	{
-		va.x -= (1-va.y)/above_slope;
+		va.x = dx*(va.x-nearest.x)/(mouse.x-nearest.x);
 	}
 	else
 	{
-
-		va.x += (va.y+1)/below_slope; //need to multiply by some factor 
+		//va.x = dx*(2*mouse.x-va.x-nearest.x)/(mouse.x-nearest.x);
 	}
-
-	
-	//Uncomment the block below to add in y-displacement
-	/*
-	if (va.x >= mouse.x)
-	{
-		va.y -= (1-va.x)/right_slope;
-	}
-	else
-	{
-		va.y += (va.x+1)/left_slope;
-	}
-	//*/
-
 
 	gl_Position = vec4(va, 0, 1);
 }

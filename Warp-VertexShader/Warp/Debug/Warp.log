@@ -1,5 +1,5 @@
-﻿Build started 12/10/2012 3:17:31 AM.
-     1>Project "C:\Users\Craig\Documents\Warp-VertexShader\Warp\Warp.vcxproj" on node 2 (build target(s)).
+﻿Build started 12/10/2012 1:19:40 PM.
+     1>Project "\\wfs1\users$\cday\Desktop\warp-current\Warp-VertexShader\Warp\Warp.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Debug\Warp.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
@@ -13,8 +13,8 @@
        FinalizeBuildStatus:
          Deleting file "Debug\Warp.unsuccessfulbuild".
          Touching "Debug\Warp.lastbuildstate".
-     1>Done Building Project "C:\Users\Craig\Documents\Warp-VertexShader\Warp\Warp.vcxproj" (build target(s)).
+     1>Done Building Project "\\wfs1\users$\cday\Desktop\warp-current\Warp-VertexShader\Warp\Warp.vcxproj" (build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.05
+Time Elapsed 00:00:00.55
