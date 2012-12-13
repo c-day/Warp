@@ -25,9 +25,11 @@ public:
 	vector<GLdouble> va_normals;
 	vector<GLdouble> va_texture;
 	vector<GLuint> va_indices;
+	vector<glm::vec3> bowl_vertices;
 	GLuint pop_handle;
 	Bowl();
 	void bowlbot();
 	void bowlmake();
 	void setTex(GLuint tex);
+	vector<glm::vec3> getVertArray();
 };

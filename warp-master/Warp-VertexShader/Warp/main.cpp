@@ -67,9 +67,9 @@ GLuint back_array_handle;
 //Used by lighting shader
 vector<glm::vec3> bowl_vertices;
 vector<glm::vec3> bowl_normals;
-GLuint bowl_vertices_handle;
-GLuint bowl_normals_handle;
+GLuint bowl_coord_handle;
 GLuint bowl_array_handle;
+GLuint bowl_normals_handle;
 GLuint norm_handle;
 GLuint mv_mat_handle;
 GLuint norm_mat_handle;
@@ -77,10 +77,6 @@ GLuint mvp_mat_handle;
 //General Use
 GLuint image_1_handle;
 GLuint tex_handle;
-GLuint left_overlay_handle;
-GLuint right_overlay_handle;
-GLuint right_curtain_handle;
-GLuint left_curtain_handle;
 GLuint pop_handle;
 glm::vec2 mouse(0,0);
 glm::vec2 mouse_start(0, 0);
@@ -89,16 +85,6 @@ glm::mat4 modelview_matrix;
 glm::mat3 normal_matrix;
 glm::mat4 mvp_matrix ;
 
-
-void rollCurtainOut()
-{
-
-}
-
-void rollCurtainBack()
-{
-
-}
 
 // function to render a frame buffer object
 void RenderIntoBuffer(FrameBufferObject fbo, GLuint handle) 
@@ -183,8 +169,6 @@ void DisplayFunc()
 {
 	// Phong shader work
 	
-	glEnable(GL_DEPTH_TEST);
-
 	projection_matrix = glm::ortho(-1.0f,1.0f,-1.0f,1.0f,1.0f,10.0f);
 	modelview_matrix = glm::lookAt(glm::vec3(0.0f,0.0f,10.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	normal_matrix = glm::inverse(glm::transpose(glm::mat3(modelview_matrix)));
@@ -205,9 +189,9 @@ void DisplayFunc()
 	glViewport(0, 0, window_width, window_height);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glLightfv(GL_LIGHT0 , GL_POSITION , light_position);
+//	glLightfv(GL_LIGHT0 , GL_POSITION , light_position);
 	gluLookAt(0, 0, 10, 0, 0, 0, 0, 1, 0 );
-	glEnable(GL_COLOR_MATERIAL);
+//	glEnable(GL_COLOR_MATERIAL);
 
 	//////////////////////Main Scene image using background shader////////////////////
 	//*
@@ -254,14 +238,14 @@ void DisplayFunc()
 	//////////////////////*/
 
 	// the popcorn bucket is placed "on" the table
-	
+	//*
 	glPushMatrix();
 	glTranslated(0.6,-0.65,3.1);
 
 	glPushMatrix();
-	glRotated(23.0,1.0,0.0,0.0);
-	glRotated(0.0,0.0,1.0,0.0);
-	glRotated(0.0,0.0,0.0,1.0);
+	glRotated(100.0,0.0,1.0,0.0);
+	glRotated(15.0,0.0,0.0,1.0);
+	glRotated(10.0,1.0,0.0,0.0);
 
 	glScalef(0.5,0.5,0.5);
 	aBowl.bowlmake();
@@ -269,41 +253,44 @@ void DisplayFunc()
 	glPopMatrix();
 
 	glPopMatrix();
-	
-	//*
+	//*/
+	/*
 	///////////////////////////////////////Phong shaders ////////////////////////////
 
 	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
-
+	aBowl.bowlbot();
 	if (bowl_vertices.size() == 0) 
 	{
 		for(int i = 0; i < aBowl.va_vertices.size()/3; i += 3)
 		{
 			bowl_vertices.push_back(glm::vec3(aBowl.va_vertices[i], aBowl.va_vertices[i+1], aBowl.va_vertices[i+2]));
 		}
+		for(int i = 0; i < aBowl.va_normals.size()/3; i += 3)
+		{
+			bowl_normals.push_back(glm::vec3(aBowl.va_normals[i], aBowl.va_normals[i+1], aBowl.va_normals[i+2]));
+		}
+		
 		
 		// get all the handles and bind them
-		//////////////////CHANGE TEHSE THINGS
-		glGenBuffers(1, &vertex_coordinate_handle);
-		assert(vertex_coordinate_handle != (GLuint) -1);
-		glBindBuffer(GL_ARRAY_BUFFER, vertex_coordinate_handle);
-		glBufferData(GL_ARRAY_BUFFER, sh_vertices.size() * sizeof(glm::vec2), &sh_vertices[0], GL_STATIC_DRAW);
+		glGenBuffers(1, &bowl_coord_handle);
+		assert(bowl_coord_handle != (GLuint) -1);
+		glBindBuffer(GL_ARRAY_BUFFER, bowl_coord_handle);
+		glBufferData(GL_ARRAY_BUFFER, bowl_vertices.size() * sizeof(glm::vec3), &bowl_vertices[0], GL_STATIC_DRAW);
 
-		glGenBuffers(1, &tex_coord_handle);
-		assert(tex_coord_handle != (GLuint) -1);
-		glBindBuffer(GL_ARRAY_BUFFER, tex_coord_handle);
-		glBufferData(GL_ARRAY_BUFFER, tex_vertices.size() * sizeof(glm::vec2), &tex_vertices[0], GL_STATIC_DRAW);
+		glGenBuffers(1, &bowl_normals_handle);
+		assert(bowl_normals_handle != (GLuint) -1);
+		glBindBuffer(GL_ARRAY_BUFFER, bowl_normals_handle);
+		glBufferData(GL_ARRAY_BUFFER, bowl_normals.size() * sizeof(glm::vec3), &bowl_normals[0], GL_STATIC_DRAW);
 
-		glGenVertexArrays(1, &vertex_array_handle);
-		glBindVertexArray(vertex_array_handle);
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
+		glGenVertexArrays(1, &bowl_array_handle);
+		glBindVertexArray(bowl_array_handle);
+		glEnableVertexAttribArray(0); //bowl vertices
+		glEnableVertexAttribArray(1); //bowl normals
 
-		glBindBuffer(GL_ARRAY_BUFFER, vertex_coordinate_handle);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (GLubyte *) NULL);
-		glBindBuffer(GL_ARRAY_BUFFER, tex_coord_handle);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (GLubyte *) NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, bowl_coord_handle);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte *) NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, bowl_normals_handle);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte *) NULL);
 
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -317,64 +304,12 @@ void DisplayFunc()
 	
 	lighting.SetLight(glm::vec4(100.0f, 100.0f, 100.0f,1.0f), glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f));
 	lighting.SetMaterial(glm::vec3(0.1f), glm::vec3(0.709804f, 0.184314f, 0.184314f), glm::vec3(0.5f), 80.0f);
-
+	glDrawElements(GL_QUADS , aBowl.getVertArray().size(), GL_UNSIGNED_INT , &aBowl.getVertArray()[0]);
 	glUseProgram(0);
 	
 	///////////////////////////////////////////*/
 
-	/*
-
-	// two curtains are placed over the screen
-	glBindTexture(GL_TEXTURE_2D, left_overlay_handle);
-	glEnable(GL_TEXTURE_2D);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0f, 0.0f);
-	glVertex3f(-1.0f, -1.0f, 3.0f);
-	glTexCoord2f(1.0f, 0.0f);
-	glVertex3f(-0.51f, -1.0f, 3.0f);
-	glTexCoord2f(1.0f, 1.0f);
-	glVertex3f(-0.51f, 1.0f, 3.0f);
-	glTexCoord2f(0.0f, 1.0f);
-	glVertex3f(-1.0f, 1.0f, 3.0f);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
-	//*/
-
-
-	/*
-	glBindTexture(GL_TEXTURE_2D, right_overlay_handle);
-	glEnable(GL_TEXTURE_2D);
-	glBegin(GL_QUADS);
-	glTexCoord2f(1.0f, 0.0f);
-	glVertex3f(1.0f, -1.0f, 3.0f);
-	glTexCoord2f(0.0f, 0.0f);
-	glVertex3f(0.525f, -1.0f, 3.0f);
-	glTexCoord2f(0.0f, 1.0f);
-	glVertex3f(0.525f, 1.0f, 3.0f);
-	glTexCoord2f(1.0f, 1.0f);
-	glVertex3f(1.0f, 1.0f, 3.0f);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
-	//*/
-
-	/*
-	glBegin(GL_QUADS);
-	glColor3f(0.635f, 0.039f, 0.039f);
-	glTexCoord2f(0.0f, 0.0f);
-	glVertex3f(-1.0f, -0.04f, 2.0f);
-	glTexCoord2f(1.0f, 0.0f);
-	glVertex3f(0.0f, -0.04f, 2.0f);
-	glTexCoord2f(1.0f, 1.0f);
-	glVertex3f(0.0f, 0.82f, 2.0f);
-	glTexCoord2f(0.0f, 1.0f);
-	glVertex3f(-1.0f, 0.82f, 2.0f);
-	glEnd();
-	//*/
-
 	//*
-
 	// the actual screen is placed.
 	glBindTexture(GL_TEXTURE_2D, frame.texture_handles[0]);
 	glEnable(GL_TEXTURE_2D);
@@ -421,10 +356,6 @@ void KeyboardFunc(unsigned char c, int x, int y)
 {
 	switch (c)
 	{
-	case 'o':
-		// provides the option to roll the curtains in or out
-		//screen_visible ? rollCurtainOut() : rollCurtainBack();
-		break;
 	case 'w':
 		// allows wire fram mode to be toggled on or off (not interesting)
 		wire_frame = !wire_frame;
@@ -503,7 +434,7 @@ int main(int argc, char * argv[])
 	glutMotionFunc(MotionFunc);
 	glutCloseFunc(CloseFunc);
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
-	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST | GL_LIGHTING);
 
 	ilInit();
 	iluInit();
@@ -540,10 +471,6 @@ int main(int argc, char * argv[])
 	tex_handle = ilutGLLoadImage("Home-Theater.jpg");
 	tex_w = ilGetInteger(IL_IMAGE_WIDTH);
 	tex_h = ilGetInteger(IL_IMAGE_HEIGHT);
-
-	left_overlay_handle = ilutGLLoadImage("left-over.jpg");
-	right_overlay_handle = ilutGLLoadImage("right-over.jpg");
-	left_curtain_handle = ilutGLLoadImage("left-curtain.jpg");
 
 	pop_handle = ilutGLLoadImage("popcorn.jpg");
 	pop_w = ilGetInteger(IL_IMAGE_WIDTH);

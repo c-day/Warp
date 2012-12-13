@@ -3,7 +3,7 @@
 
 Bowl::Bowl()
 {
-	// set up some basic balloon characteristics
+	// set up some basic bowl characteristics
 	count = 0;
 	filled = true;
 }
@@ -218,25 +218,14 @@ void Bowl::bowlbot()
 
 void Bowl::bowlmake()
 {
-	// set up the bowl for color (not needed once the texture is applied) with all values.
 	glPushMatrix();
-	GLfloat	ambient[4]	= { 0.09f , 0.02f , 0.55f , 0.07f };
-	GLfloat	diffuse[4]	= { 0.15f , 0.13f , 0.84f , 0.60f };
-	GLfloat	specular[4]	= { 0.91f , 0.91f , 1.00f , 1.00f };
-
-
-	glMaterialf( GL_FRONT , GL_SHININESS , 95.0f);
-	glMaterialfv(GL_FRONT , GL_AMBIENT   , ambient);
-	glMaterialfv(GL_FRONT , GL_DIFFUSE   , diffuse);
-	glMaterialfv(GL_FRONT , GL_SPECULAR  , specular);
-
 	// draw the bowl.
 	bowlbot();
 
 	// begin to bind the picture of the popcorn to the bucket.
 	glBindTexture(GL_TEXTURE_2D, pop_handle);
 	glEnable(GL_TEXTURE_2D);
-
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	// enable and utilize the vertex array system to give the vertices of the object and place the texture on those points.
 	glVertexPointer(3 , GL_DOUBLE , 0 , &this->va_vertices[0]);
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -253,5 +242,19 @@ void Bowl::bowlmake()
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glPopMatrix();
+}
+
+
+vector<glm::vec3> Bowl::getVertArray()
+{
+	if(bowl_vertices.size() == 0)
+		{
+		for(int i = 0; i < this->va_vertices.size()/3; i += 3)
+		{
+			bowl_vertices.push_back(glm::vec3(va_vertices[i], va_vertices[i+1], va_vertices[i+2]));
+		}
+	}
+	return bowl_vertices;
 }
