@@ -96,6 +96,7 @@ void RenderIntoBuffer(FrameBufferObject fbo, GLuint handle)
 	glOrtho(-fbo.size.x/2, fbo.size.x/2, -fbo.size.y/2, fbo.size.y/2, 1, 10);
 	// setting the ortho view and matrix views
 
+	// here we are setting up the displacement map.
 	if (sh_vertices.size() == 0)
 	{
 		for (float i = -1.0; i <= 1.0; i += 0.01f)
@@ -167,7 +168,7 @@ void RenderIntoBuffer(FrameBufferObject fbo, GLuint handle)
 
 void DisplayFunc()
 {
-	// Phong shader work
+	// viewing matrices which are fed into the phong shader further down
 	
 	projection_matrix = glm::ortho(-1.0f,1.0f,-1.0f,1.0f,1.0f,10.0f);
 	modelview_matrix = glm::lookAt(glm::vec3(0.0f,0.0f,10.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
@@ -335,12 +336,14 @@ void DisplayFunc()
 
 void TimerFunc(int period)
 {
+	// keeping track of time (although not used in this implementation)
 	glutTimerFunc(1000 / 60, TimerFunc, 1000 / 60);
 	glutPostRedisplay();
 }
 
 void ReshapeFunc(int w, int h)
 {
+	// resize the window properly
 	if(w != 0 && h !=0 ) {
 	window_width = w;
 	window_height = h;
@@ -357,11 +360,12 @@ void KeyboardFunc(unsigned char c, int x, int y)
 	switch (c)
 	{
 	case 'w':
-		// allows wire fram mode to be toggled on or off (not interesting)
+		// allows wire fram mode to be toggled on or off (mainly a debugging feature)
 		wire_frame = !wire_frame;
 		break;
 	case 27:
 	case 'x':
+		// leave the loop and exit the program
 		glutLeaveMainLoop();
 		return;
 
@@ -414,6 +418,7 @@ void MotionFunc(int x, int y)
 
 void CloseFunc()
 {
+	// let's take down those shaders
 	shader.TakeDown();
 	frame.TakeDown();
 }
@@ -441,6 +446,9 @@ int main(int argc, char * argv[])
 	ilutInit();
 	ilutRenderer(ILUT_OPENGL);
 
+	/*
+		Error checking to toss up errors.
+	*/
 	if (glewInit() != GLEW_OK)
 	{
 		cerr << "GLEW failed to initialize." << endl;
@@ -482,6 +490,7 @@ int main(int argc, char * argv[])
 	cout << "Background: " << tex_w << " x " << tex_h << endl;
 	cout << "Popcorn: " << pop_w << " x " << pop_h << endl;
 
+	// this will let us know if the main image failed to initialize.
 	if (!frame.Initialize(glm::ivec2(image_1_w, image_1_h), 1, true))
 	{
 		cerr << "Frame buffer 1 failed to initialize." << endl;
