@@ -80,6 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ADSShader.cpp" />
     <ClCompile Include="bowl.cpp" />
     <ClCompile Include="fbo.cpp" />
     <ClCompile Include="globals.cpp" />
@@ -87,6 +88,7 @@
     <ClCompile Include="shader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ADSShader.h" />
     <ClInclude Include="bowl.h" />
     <ClInclude Include="fbo.h" />
     <ClInclude Include="globals.h" />
@@ -95,6 +97,10 @@
   <ItemGroup>
     <None Include="back.frag" />
     <None Include="back.vert" />
+    <None Include="per_vertex.frag" />
+    <None Include="per_vertex.vert" />
+    <None Include="phong.frag" />
+    <None Include="phong.vert" />
     <None Include="stub.frag" />
     <None Include="stub.vert" />
   </ItemGroup>

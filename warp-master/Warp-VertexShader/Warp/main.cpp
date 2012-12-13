@@ -18,6 +18,7 @@
 #include "globals.h"
 #include "fbo.h"
 #include "shader.h"
+#include "ADSShader.h"
 #include "bowl.h"
 
 /*
@@ -29,7 +30,6 @@
 ***              Lucas Mynsberge              ***
 *************************************************
 */
-
 
 bool wire_frame = false;
 // sets up wire frame option (toggle)
@@ -49,6 +49,7 @@ int pop_h;
 //Shader Objects
 Shader shader;
 Shader background;
+ADSShader lighting;
 //Framebuffer Objects
 FrameBufferObject frame;
 FrameBufferObject overlay;
@@ -63,6 +64,16 @@ GLuint tex_coord_handle;
 vector<glm::vec2> back_vertices;
 GLuint back_coord_handle;
 GLuint back_array_handle;
+//Used by lighting shader
+vector<glm::vec3> bowl_vertices;
+vector<glm::vec3> bowl_normals;
+GLuint bowl_vertices_handle;
+GLuint bowl_normals_handle;
+GLuint bowl_array_handle;
+GLuint norm_handle;
+GLuint mv_mat_handle;
+GLuint norm_mat_handle;
+GLuint mvp_mat_handle;
 //General Use
 GLuint image_1_handle;
 GLuint tex_handle;
@@ -73,6 +84,11 @@ GLuint left_curtain_handle;
 GLuint pop_handle;
 glm::vec2 mouse(0,0);
 glm::vec2 mouse_start(0, 0);
+glm::mat4 projection_matrix;
+glm::mat4 modelview_matrix;
+glm::mat3 normal_matrix;
+glm::mat4 mvp_matrix ;
+
 
 void rollCurtainOut()
 {
@@ -165,11 +181,20 @@ void RenderIntoBuffer(FrameBufferObject fbo, GLuint handle)
 
 void DisplayFunc()
 {
+	// Phong shader work
+	
+	glEnable(GL_DEPTH_TEST);
+
+	projection_matrix = glm::ortho(-1.0f,1.0f,-1.0f,1.0f,1.0f,10.0f);
+	modelview_matrix = glm::lookAt(glm::vec3(0.0f,0.0f,10.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
+	normal_matrix = glm::inverse(glm::transpose(glm::mat3(modelview_matrix)));
+	mvp_matrix = projection_matrix * modelview_matrix;
+	
 	glPolygonMode(GL_FRONT_AND_BACK, wire_frame ? GL_LINE : GL_FILL);
 	
 	RenderIntoBuffer(frame, image_1_handle);
 	
-	static GLfloat light_position[] = {0 , 0 , 15 , 1.0 };
+	static GLfloat light_position[] = {0 , 0 , 12 , 1.0 };
 
 	//clear the color and set up the model view and lighting
 	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
@@ -229,6 +254,7 @@ void DisplayFunc()
 	//////////////////////*/
 
 	// the popcorn bucket is placed "on" the table
+	
 	glPushMatrix();
 	glTranslated(0.6,-0.65,3.1);
 
@@ -237,14 +263,66 @@ void DisplayFunc()
 	glRotated(0.0,0.0,1.0,0.0);
 	glRotated(0.0,0.0,0.0,1.0);
 
-	glScalef(0.7,0.7,0.7);
+	glScalef(0.5,0.5,0.5);
 	aBowl.bowlmake();
 
 	glPopMatrix();
 
 	glPopMatrix();
-
+	
 	//*
+	///////////////////////////////////////Phong shaders ////////////////////////////
+
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_LIGHTING);
+
+	if (bowl_vertices.size() == 0) 
+	{
+		for(int i = 0; i < aBowl.va_vertices.size()/3; i += 3)
+		{
+			bowl_vertices.push_back(glm::vec3(aBowl.va_vertices[i], aBowl.va_vertices[i+1], aBowl.va_vertices[i+2]));
+		}
+		
+		// get all the handles and bind them
+		//////////////////CHANGE TEHSE THINGS
+		glGenBuffers(1, &vertex_coordinate_handle);
+		assert(vertex_coordinate_handle != (GLuint) -1);
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_coordinate_handle);
+		glBufferData(GL_ARRAY_BUFFER, sh_vertices.size() * sizeof(glm::vec2), &sh_vertices[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &tex_coord_handle);
+		assert(tex_coord_handle != (GLuint) -1);
+		glBindBuffer(GL_ARRAY_BUFFER, tex_coord_handle);
+		glBufferData(GL_ARRAY_BUFFER, tex_vertices.size() * sizeof(glm::vec2), &tex_vertices[0], GL_STATIC_DRAW);
+
+		glGenVertexArrays(1, &vertex_array_handle);
+		glBindVertexArray(vertex_array_handle);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_coordinate_handle);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (GLubyte *) NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, tex_coord_handle);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (GLubyte *) NULL);
+
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	lighting.Use();
+	
+	glUniformMatrix4fv(lighting.mv_mat_handle,1,GL_FALSE, glm::value_ptr(modelview_matrix) );
+	glUniformMatrix4fv(lighting.mvp_mat_handle,1,GL_FALSE, glm::value_ptr(mvp_matrix));
+	glUniformMatrix4fv(lighting.norm_mat_handle , 1, GL_FALSE, glm::value_ptr(normal_matrix));
+	
+	lighting.SetLight(glm::vec4(100.0f, 100.0f, 100.0f,1.0f), glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f));
+	lighting.SetMaterial(glm::vec3(0.1f), glm::vec3(0.709804f, 0.184314f, 0.184314f), glm::vec3(0.5f), 80.0f);
+
+	glUseProgram(0);
+	
+	///////////////////////////////////////////*/
+
+	/*
 
 	// two curtains are placed over the screen
 	glBindTexture(GL_TEXTURE_2D, left_overlay_handle);
@@ -264,7 +342,7 @@ void DisplayFunc()
 	//*/
 
 
-	//*
+	/*
 	glBindTexture(GL_TEXTURE_2D, right_overlay_handle);
 	glEnable(GL_TEXTURE_2D);
 	glBegin(GL_QUADS);
@@ -281,7 +359,7 @@ void DisplayFunc()
 	glDisable(GL_TEXTURE_2D);
 	//*/
 
-	//*
+	/*
 	glBegin(GL_QUADS);
 	glColor3f(0.635f, 0.039f, 0.039f);
 	glTexCoord2f(0.0f, 0.0f);
@@ -345,7 +423,7 @@ void KeyboardFunc(unsigned char c, int x, int y)
 	{
 	case 'o':
 		// provides the option to roll the curtains in or out
-		screen_visible ? rollCurtainOut() : rollCurtainBack();
+		//screen_visible ? rollCurtainOut() : rollCurtainBack();
 		break;
 	case 'w':
 		// allows wire fram mode to be toggled on or off (not interesting)
@@ -367,28 +445,9 @@ void MouseFunc(int button, int state, int x, int y)
 	*/
 
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		if(x < 0.25*window_width)
-		{
-			mouse_start.x = -1.0;
-		}
-		else if(x > 0.75*window_width)
-		{
-			mouse_start.x = 1.0;
-		}
-		else
+		if (x >= 0.25*window_width && x <= 0.75*window_width && y >= 0.1*window_height && y <= 0.5*window_height)
 		{
 			mouse_start.x = float((x - (window_width/2.0))/(window_width/4.0));
-		}
-		if(y < 0.1*window_height)
-		{
-			mouse_start.y = 1.0;
-		}
-		else if(y > 0.5*window_height)
-		{
-			mouse_start.y = -1.0;
-		}
-		else 
-		{
 			mouse_start.y = float((window_height - y)/(0.20*window_height) - 3.50);
 		}
 
@@ -396,30 +455,12 @@ void MouseFunc(int button, int state, int x, int y)
 	}
 	
 	// This just sets up the mouse location if the button isn't pressed down.
-	if(x < 0.25*window_width)
-	{
-		mouse.x = -1.0;
-	}
-	else if(x > 0.75*window_width)
-	{
-		mouse.x = 1.0;
-	}
-	else
+	if (x >= 0.25*window_width && x <= 0.75*window_width && y >= 0.1*window_height && y <= 0.5*window_height)
 	{
 		mouse.x = float((x - (window_width/2.0))/(window_width/4.0));
-	}
-	if(y < 0.1*window_height)
-	{
-		mouse.y = 1.0;
-	}
-	else if(y > 0.5*window_height)
-	{
-		mouse.y = -1.0;
-	}
-	else 
-	{
 		mouse.y = float((window_height - y)/(0.20*window_height) - 3.50);
 	}
+
 	
 }
 
@@ -430,29 +471,10 @@ void MotionFunc(int x, int y)
 	In the case that it is in the screen, the mouse is set to the proper location via scaling the program's window's height and width.
 	*/
 	
-	if(x < 0.25*window_width)
-	{
-		mouse.x = -1.0;
-	}
-	else if(x > 0.75*window_width)
-	{
-		mouse.x = 1.0;
-	}
-	else
+	if (x >= 0.25*window_width && x <= 0.75*window_width && y >= 0.1*window_height && y <= 0.5*window_height)
 	{
 		mouse.x = float((x - (window_width/2.0))/(window_width/4.0));
-	}
-	if(y < 0.1*window_height)
-	{
-		mouse.y = 1.0;
-	}
-	else if(y > 0.5*window_height)
-	{
-		mouse.y = -1.0;
-	}
-	else 
-	{
-		mouse.y = float((window_height - y)/(0.20*window_height) - 3.50 );
+		mouse.y = float((window_height - y)/(0.20*window_height) - 3.50);
 	}
 
 	cout << "Mouse: " << mouse.x << ", " << mouse.y << endl;
@@ -503,6 +525,12 @@ int main(int argc, char * argv[])
 	{
 		return 0;
 	}
+
+	if (!lighting.Initialize("per_vertex.vert", "per_vertex.frag"))
+	{
+		return 0;
+	}
+
 
 	// uses DevIL to grab the images used in textures and then prepares them for us.
 	image_1_handle = ilutGLLoadImage("lotr-scene.jpg");

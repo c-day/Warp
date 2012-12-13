@@ -1,6 +1,10 @@
 #pragma once
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 
 #include <stdio.h>
 #include <iostream>
@@ -29,5 +33,9 @@ public:
 	GLuint mouse_handle;
 	GLuint mouse_start_handle;
 	GLuint image_handle;
-
+	GLuint vert_handle;
+	GLuint norm_handle;
+	GLuint mv_mat_handle;
+	GLuint norm_mat_handle;
+	GLuint mvp_mat_handle;
 };

@@ -30,6 +30,9 @@
     <ClCompile Include="bowl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ADSShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.h">
@@ -44,11 +47,18 @@
     <ClInclude Include="bowl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ADSShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="stub.frag" />
     <None Include="stub.vert" />
     <None Include="back.frag" />
     <None Include="back.vert" />
+    <None Include="phong.frag" />
+    <None Include="phong.vert" />
+    <None Include="per_vertex.frag" />
+    <None Include="per_vertex.vert" />
   </ItemGroup>
 </Project>

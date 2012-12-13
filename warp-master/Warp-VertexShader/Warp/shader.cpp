@@ -10,6 +10,11 @@ Shader::Shader()
 	this->mouse_handle = -1;
 	this->mouse_start_handle = -1;
 	this->image_handle = -1;
+	this->vert_handle = -1;
+	this->norm_handle = -1;
+	this->mv_mat_handle = -1;
+	this->mvp_mat_handle = -1;
+	this->norm_mat_handle = -1;
 }
 
 void Shader::Use()
@@ -61,6 +66,11 @@ bool Shader::Initialize(char * vertex_shader_file, char * fragment_shader_file)
 	this->mouse_handle = glGetUniformLocation(this->program_id, (const GLchar *) "mouse");
 	this->mouse_start_handle = glGetUniformLocation(this->program_id, (const GLchar *) "mouseStart");
 	this->image_handle = glGetUniformLocation(this->program_id, (const GLchar *) "image");
+	//this->vert_handle = glGetUniformLocation(this->program_id, (const GLchar *) "Vertex");
+	//this->norm_handle = glGetUniformLocation(this->program_id, (const GLchar *) "Normals");
+	this->mv_mat_handle = glGetUniformLocation(this->program_id, (const GLchar *) "MV_Matrix");
+	this->norm_mat_handle = glGetUniformLocation(this->program_id, (const GLchar *) "Norm_Matrix");
+	this->mvp_mat_handle = glGetUniformLocation(this->program_id, (const GLchar *) "MVP_Matrix");
 	glUseProgram(0);
 
 

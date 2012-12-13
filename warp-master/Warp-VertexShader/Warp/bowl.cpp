@@ -234,7 +234,7 @@ void Bowl::bowlmake()
 	bowlbot();
 
 	// begin to bind the picture of the popcorn to the bucket.
-	glBindTexture(GL_TEXTURE_2D,pop_handle);
+	glBindTexture(GL_TEXTURE_2D, pop_handle);
 	glEnable(GL_TEXTURE_2D);
 
 	// enable and utilize the vertex array system to give the vertices of the object and place the texture on those points.
